@@ -10,13 +10,13 @@ const double ASPECT_RATIO = 0.5;
 //const std::string ASCII_CHARS = " .:-=+*#%@"; for some reason this dosen't work
 const std::string ASCII_CHARS = "@%#*+=-:. ";
 int numChars = int(ASCII_CHARS.length());
-int step = 256 / numChars;
+int step = 255 / numChars;
 int index;
 static const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 COORD coord = { 0, 0 };
 
 char grayscaleToASCII(int pixelValue) {
-    index = (256-pixelValue) / step;  //invert the mapping
+    index = (255-pixelValue) / step;  //invert the mapping
     return ASCII_CHARS[index];
 }
 
@@ -25,13 +25,23 @@ void setCursorPosition0()
     SetConsoleCursorPosition(hOut, coord);
 }
 
+//guess what this does
+std::string GetCurrentDirectory()
+{
+	char buffer[MAX_PATH];
+	GetModuleFileNameA(NULL, buffer, MAX_PATH);
+	std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+	
+	return std::string(buffer).substr(0, pos);
+}
+
 int main() {
     //removing synchronization between c++ and I/O Streams (go fast fast)
     std::ios_base::sync_with_stdio(false);
     //disable annoying warnings
     cv::utils::logging::setLogLevel(cv::utils::logging::LogLevel::LOG_LEVEL_SILENT);
     ShowWindow(GetConsoleWindow(), SW_MAXIMIZE);
-    std::string videoPath="badApple.mov";
+    std::string videoPath=GetCurrentDirectory()+"/badApple.mov";
     cv::VideoCapture video(videoPath);
     if (!video.isOpened()) {
         std::cout<<"no video?";
@@ -68,7 +78,7 @@ int main() {
         cols=fakeFrame.cols;
     }
     int spaceRemaining=(consoleWidth-cols)/2;
-    std::string songPath = "badApple.flac";
+    std::string songPath = GetCurrentDirectory()+"/badApple.flac";
     sf::Music song;
     if(!song.openFromFile(songPath)){
         std::cout<<"no audio?";
